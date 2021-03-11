@@ -1,0 +1,22 @@
+#url: https://stemangiola.github.io/bioc_2020_tidytranscriptomics
+
+template:
+  params:
+    bootswatch: flatly
+
+home:
+  title: "CISR2021singlecellRNAseq"
+  type: inverse
+
+navbar:
+  title: ~
+  type: default
+  left:
+    - text: Workshop
+      href: articles/tidytranscriptomics.html
+    - text: Supplementary
+      href: articles/supplementary.html
+
+  right:
+   - icon: fa-github
+     href: https://github.com/welch16/cisr2021singlecellRNA

@@ -1,0 +1,28 @@
+Package: cisr2021singlecellRNA
+Type: Package
+Title: Intro. to single cell RNA-seq analysis
+Version: 0.1.0
+Authors@R: c(
+  person("Rene", "Welch", email = "rwelch2@wisc.edu",
+    role = c("aut", "cre")))
+Description: This is an introductory 15 minute tutorial on analyzing single cell RNA-seq data.
+    We are going to use a public dataset, and then show to analyze with Seurat
+License: CC BY 4.0
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Imports: 
+    dplyr,
+    purrr,
+    ggplot2,
+    Seurat,
+    tibble,
+    magrittr,
+    BiocManager,
+    scRNAseq,
+    SingleCellExperiment
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
