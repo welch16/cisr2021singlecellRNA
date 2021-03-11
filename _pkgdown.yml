@@ -13,9 +13,7 @@ navbar:
   type: default
   left:
     - text: Workshop
-      href: articles/tidytranscriptomics.html
-    - text: Supplementary
-      href: articles/supplementary.html
+      href: articles/intro_sc_analysis.html
 
   right:
    - icon: fa-github

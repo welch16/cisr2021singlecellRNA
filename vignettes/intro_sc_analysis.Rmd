@@ -1,0 +1,74 @@
+---
+title: "Introduction to single cell RNA-seq analysis"
+author: Rene Welch
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{intro_sc_analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  message = FALSE, warning = FALSE,
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Workshop description
+
+In exploring and analyzing single cell RNA sequencing data, there are a number of key concepts, such as filtering, scaling, dimensionality reduction, hypothesis testing, clustering and visualization, that need to be understood.
+
+The idea behind this small session is to provide tools to start analyzing a single cell RNA-seq dataset, we are going to focus on how to utilize the R package Seurat to provide a dimensionality reduction visualization.
+
+### R / Bioconductor package used
+
+* `scRNAseq`
+* `Seurat`
+
+## Introduction
+
+There are many steps involved in analyzing a single cell RNA-seq experiment. Usually, we start by aligning the sequence reads into a reference genome to quantify the number of reads mapped to each gene. This results into a table of counts, which we are going to use to perform statistical analysis using R. For single cell RNA-seq data, there are many tools to perform this step, but today we are going to utilize from an already curated dataset, and show how to process it with the R package `Seurat`.
+
+First, let's load all the packages we will need to analyze the data:
+
+```{r, message=FALSE,warning=FALSE}
+library(Seurat) ## main package that we are going to use
+library(SingleCellExperiment)
+library(scRNAseq) 
+library(tidyverse) 
+library(plotly)
+library(cowplot)
+```
+
+### Getting the data
+
+First, we need to download a dataset. Fortunately, the `scRNAseq` package provides a variety of already curated datasets:
+
+
+```{r lung-data, message=FALSE, echo=TRUE,include=TRUE, eval=TRUE, warning=FALSE}
+lung_data <- ZilionisLungData("mouse")
+colnames(lung_data) <- make.unique(colnames(lung_data), sep = "_")
+colData(lung_data)[["Barcode"]] <- colnames(lung_data)
+logcounts(lung_data) <- as.matrix(log10(1 + counts(lung_data)))
+lung_data <- as.Seurat(lung_data)
+```
+
+Now, Seurat provides all sorts of useful information on our datset:
+
+```{r include=TRUE,echo=TRUE,eval=TRUE}
+lung_data
+```
+
+To access the metadata we do:
+
+```{r include=TRUE,echo=TRUE,eval=TRUE}
+head(lung_data@meta.data)
+```
+
+This is a curated dataset, thus it already contains the cell labels. At the moment we are going to assume that we don't know that yet.
+
+### Quality control
+
+```{r brief-qc, include=TRUE,echo=TRUE,eval=TRUE}
