@@ -37,7 +37,7 @@ First, let's load all the packages we will need to analyze the data:
 library(Seurat) ## main package that we are going to use
 library(SingleCellExperiment)
 library(scRNAseq) 
-library(tidyverse) 
+library(tidyverse)
 library(cowplot)
 ```
 
@@ -82,13 +82,16 @@ Usually to do a quick quality control, the idea behind this step is that we woul
 
 First, we add a pair of QC metric to the `meta.data`, and the explore their distribution:
 
-```{r brief-qc, include=TRUE,echo=TRUE,eval=TRUE, out.width = "75%", fig.height=4,fig.width=7}
+```{r brief-qc, include=TRUE,echo=TRUE,eval=TRUE, out.width = "90%", fig.height=4,fig.width=7}
 lung_data[["nCount_RNA"]] <- colSums(lung_data[["RNA"]]@counts)
 lung_data[["nFeature_RNA"]] <- apply(lung_data[["RNA"]]@counts, 2, function(x)sum(x > 0))
-VlnPlot(lung_data, features = c("nFeature_RNA", "nCount_RNA"), ncol = 2)
+lung_data[["mt_perc"]] <- Seurat::PercentageFeatureSet(lung_data, "^mt-")
+VlnPlot(lung_data, features = c("nFeature_RNA", "nCount_RNA", "mt_perc"), ncol = 3)
 ```
 
-Then, we compare those quantities, as expected both metrics are very correlated:
+**Disclaimer** It is alway good to check the gene naming conventions. In the `Seurat` tutorial, the mitochondrial genes are searched by looking for the `MT` pattern at the start of every gene symbol. In this dataset, the pattern that we searched was `mt` so defining the percentage of mitochondrial genes in a cell with the `MT` would result in 0% for every cell!
+
+Then, we compare the first two quantities, as expected both metrics are very correlated:
 
 ```{r metrics-corr, fig.width=6,fig.height=4, out.width="80%"}
 FeatureScatter(lung_data, feature1 = "nCount_RNA", feature2 = "nFeature_RNA",
@@ -103,7 +106,8 @@ We remove the cells with more than 12K reads or more than 3K genes and normalize
 
 ```{r subset-normalize}
 lung_data <- subset(lung_data,
-                    subset = nFeature_RNA <= 3e3 & nFeature_RNA <= 12e3)
+                    subset = nFeature_RNA <= 3e3 & nFeature_RNA <= 12e3 &
+                      mt_perc <= 20 & Used)
 ## writing the default parameters, explicitly
 lung_data <- NormalizeData(lung_data,
                            normalization.method = "LogNormalize",
@@ -139,6 +143,7 @@ For example, we can visualize top genes that are driving the variance explained 
 ```{r viz-loadings, fig.width=8,fig.height=5,out.width="90%"}
 VizDimLoadings(lung_data, dims = 1:3, reduction = "pca", ncol = 3)
 ```
+
 Then, the next question to solve is how many components to pick. There are many alternatives to solve this question, but the simplest alternative is to pick them by the Elbow criteria, which is to compare the std. deviation explained by each components with its rank, and pick the previous components before we observe and elbow pattern.
 
 ```{r pick-pc-components}
@@ -180,13 +185,38 @@ Therefore we need to depends on other dimensionality reduction methods like t-SN
 
 1. We can see that all clusters are represented, i.e. all are in front
 2. The cells in each cluster are grouped together, e.g. for clusters 7 and 8 the difference is the most striking
-3. The clusters that were close to each other are still close, e.g. `1 ~ 5 ~ 3`, `0 ~ 2`, etc
+3. The clusters that were close to each other are still close, e.g. `1 ~ 3 ~ 7`, `0 ~ 2`, etc
 4. The clustering algorithm is not perfect, it looks like there are clusters that can be further separated, thus we need to increase the resolution
 
 ```{r umap-analysis}
 lung_data <- RunUMAP(lung_data, dims = 1:10)
 DimPlot(lung_data, reduction = "umap", cols = colors)
 ```
+
+We can also, visualize how the cells are distributed under different discrete meta.data variables:
+
+```{r umap-extra, fig.width=10, fig.height=4,out.width="100%"}
+plot_grid(
+  DimPlot(lung_data, reduction = "umap", group.by = "Library.prep.batch"),
+  DimPlot(lung_data, reduction = "umap", group.by = "Tissue"), nrow = 1
+)
+
+```
+
+```{r fake-comparison-truth, include=TRUE,echo=TRUE,eval=TRUE}
+lung_data@meta.data %>%
+  select(Major.cell.type, seurat_clusters) %>% 
+  table()
+```
+
+```{r comparison-truth, include=FALSE, echo = FALSE, eval = TRUE}
+lung_data@meta.data %>%
+  select(Major.cell.type, seurat_clusters) %>% 
+  table() %>% 
+  knitr::kable() %>% 
+  kableExtra::kable_styling("striped")
+```
+
 
 **Disclaimer:** UMAP is similar to t-SNE, and we would use the `runTSNE` instead of `runUMAP`:
 
@@ -197,7 +227,7 @@ DimPlot(lung_data, reduction = "tsne", cols = colors)
 
 ## Find markers per cluster
 
-
+Finally to interpret the cluster, we can glance into few of the top genes that are representative into each cluster. This is done by using the `FindAllMarkers` function, which searches the differentially expressed genes when comparing the cells in every cluster against the others. Below we find all the markers and pick the top 10 genes in average log2 fold change, i.e. the genes with the highest relative expression in one cluster against the rest.
 
 ```{r get-representative-genes}
 lung_data_markers <- FindAllMarkers(
@@ -205,10 +235,10 @@ lung_data_markers <- FindAllMarkers(
     min.pct = 0.25, logfc.threshold = 0.25)
 top_markers <- lung_data_markers %>% 
     group_by(cluster) %>% 
-    top_n(n = 15, wt = avg_log2FC)
+    top_n(n = 10, wt = avg_log2FC)
 ```
 
-
+We can visualize these markers into a heatmap, where the rows are a genes and each column is one of the many cells. The yellow / brown color mean that a gene is expressed in a given cell.
 
 ```{r representative-genes, out.width="90%", fig.width=7, fig.height=9}
 DoHeatmap(lung_data, features = top_markers$gene,
@@ -217,5 +247,9 @@ DoHeatmap(lung_data, features = top_markers$gene,
 ```
 
 ## Final thoughts
+
+There is no an infallible recipe for analyzing any dataset, in particular single cell experiments had become more complex. In this document, we show only one strategy to start analyzing these sort of experiments.
+
+In this tutorial, we utilized data of a recent experiment and showed with simple instructions how to approximately replicate some of the clustering. 
 
 

@@ -40,3 +40,7 @@ After installing RStudio, these are the packages we may use:
     install.packages("Seurat")
     install.packages("BiocManager")
     BiocManager::install("scRNAseq") ## to get a dataset
+
+    ## extra libraries for formatting
+    install.packages("cowplot")
+    install.packages("kableExtra")
