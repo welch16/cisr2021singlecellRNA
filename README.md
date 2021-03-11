@@ -5,7 +5,7 @@
 # CISR tutorial: Introduction to single cell RNA-seq analysis
 
 <p align="center">
-<img width="350" alt="uwccc2021" src="reference/figures/Carbone_color-center.png?raw=true"/>
+<img width="350" alt="uwccc2021" src="https://github.com/welch16/cisr2021singlecellRNA/blob/main/man/figures/Carbone_color-center.png?raw=true"/>
 </p>
 
 This material as created for the *Practical Bioinformatics Tools for

@@ -10,7 +10,7 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  message = FALSE, warning = FALSE,
+  message = FALSE, warning = FALSE, fig.align = "center",
   collapse = TRUE,
   comment = "#>"
 )
@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 In exploring and analyzing single cell RNA sequencing data, there are a number of key concepts, such as filtering, scaling, dimensionality reduction, hypothesis testing, clustering and visualization, that need to be understood.
 
-The idea behind this small session is to provide tools to start analyzing a single cell RNA-seq dataset, we are going to focus on how to utilize the R package Seurat to provide a dimensionality reduction visualization.
+The idea behind this small session is to provide tools to start analyzing a single cell RNA-seq dataset, we are going to focus on how to utilize the R package Seurat to provide a dimensionality reduction visualization. These notes are based on this [tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html)
 
 ### R / Bioconductor package used
 
@@ -42,20 +42,19 @@ library(plotly)
 library(cowplot)
 ```
 
-### Getting the data
+## Getting the data
 
 First, we need to download a dataset. Fortunately, the `scRNAseq` package provides a variety of already curated datasets:
-
 
 ```{r lung-data, message=FALSE, echo=TRUE,include=TRUE, eval=TRUE, warning=FALSE}
 lung_data <- ZilionisLungData("mouse")
 colnames(lung_data) <- make.unique(colnames(lung_data), sep = "_")
 colData(lung_data)[["Barcode"]] <- colnames(lung_data)
 logcounts(lung_data) <- as.matrix(log10(1 + counts(lung_data)))
-lung_data <- as.Seurat(lung_data)
+lung_data <- as.Seurat(lung_data, project = "lung")
 ```
 
-Now, Seurat provides all sorts of useful information on our datset:
+Now, Seurat provides all sorts of useful information on our dataset:
 
 ```{r include=TRUE,echo=TRUE,eval=TRUE}
 lung_data
@@ -69,6 +68,68 @@ head(lung_data@meta.data)
 
 This is a curated dataset, thus it already contains the cell labels. At the moment we are going to assume that we don't know that yet.
 
-### Quality control
+**Quick note:** This data could be a bit large for some laptops, so in case of trouble running this naalysis, then it could be useful to pick another dataset. To list the datasets provided by the `scRNAseq` package use:
 
-```{r brief-qc, include=TRUE,echo=TRUE,eval=TRUE}
+```{r eval = FALSE}
+listDatasets()
+```
+
+## Quality control
+
+Usually to do a quick quality control, the
+
+```{r brief-qc, include=TRUE,echo=TRUE,eval=TRUE, out.width = "75%", fig.height=4,fig.width=7}
+lung_data[["nCount_RNA"]] <- colSums(lung_data[["RNA"]]@counts)
+lung_data[["nFeature_RNA"]] <- apply(lung_data[["RNA"]]@counts, 2, function(x)sum(x > 0))
+VlnPlot(lung_data, features = c("nFeature_RNA", "nCount_RNA"), ncol = 2)
+```
+
+
+
+```{r variable-features, include=TRUE,echo=TRUE,eval=TRUE,message=FALSE,warning=FALSE, fig.width = 7,fig.height=5,out.width="80%"}
+
+lung_data <- FindVariableFeatures(lung_data, selection.method = "vst", nfeatures = 2000)
+plot1 <- VariableFeaturePlot(lung_data, log = TRUE)
+top_genes <- head(VariableFeatures(lung_data), 20)
+LabelPoints(plot1, points = top_genes, repel = TRUE)
+
+```
+
+
+## Principal Components Analysis
+
+```{r pca-analysis}
+
+variable_genes <- VariableFeatures(object = lung_data)
+lung_data <- ScaleData(lung_data, features = variable_genes)
+lung_data <- RunPCA(lung_data, features = VariableFeatures(object = lung_data))
+
+```
+
+
+
+```{r pick-pc-components}
+
+ElbowPlot(lung_data)
+
+```
+
+
+## Clustering
+
+```{r clustering}
+
+lung_data <- FindNeighbors(lung_data, dims = 1:10)
+lung_data <- FindClusters(lung_data, resolution = 0.1)
+
+```
+
+## UMAP
+
+```{r umap-analysis}
+lung_data <- RunUMAP(lung_data, dims = 1:10)
+nclusters <- nlevels(lung_data@meta.data$seurat_clusters)
+colors <- pals::alphabet2(nclusters)
+names(colors) <- NULL
+DimPlot(lung_data, reduction = "umap", cols = colors)
+```
