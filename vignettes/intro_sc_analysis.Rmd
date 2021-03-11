@@ -60,7 +60,7 @@ Now, Seurat provides all sorts of useful information on our dataset:
 lung_data
 ```
 
-To access the metadata we do:
+To access the metadata, i.e. information for each cell / droplet, we do:
 
 ```{r include=TRUE,echo=TRUE,eval=TRUE}
 head(lung_data@meta.data)
@@ -76,13 +76,42 @@ listDatasets()
 
 ## Quality control
 
-Usually to do a quick quality control, the
+Usually to do a quick quality control, the idea behind this step is that we would like to not have cells in our dataset with an abnormally large / small # of genes (we quantify the # of genes for a cell/droplet as the # of genes with at least 1 read). The reasons for them are:
+
+- Cell doublets or multiplets may exhibit and abnormally high number of genes
+- Low-quality cells or empty droplets will often have few genes
+
+First, we add a pair of QC metric to the `meta.data`, and the explore their distribution:
 
 ```{r brief-qc, include=TRUE,echo=TRUE,eval=TRUE, out.width = "75%", fig.height=4,fig.width=7}
 lung_data[["nCount_RNA"]] <- colSums(lung_data[["RNA"]]@counts)
 lung_data[["nFeature_RNA"]] <- apply(lung_data[["RNA"]]@counts, 2, function(x)sum(x > 0))
 VlnPlot(lung_data, features = c("nFeature_RNA", "nCount_RNA"), ncol = 2)
 ```
+
+Then, we compare those quantities, as expected both metrics are very correlated:
+
+```{r metrics-corr, fig.width=6,fig.height=4, out.width="80%"}
+FeatureScatter(lung_data, feature1 = "nCount_RNA", feature2 = "nFeature_RNA", cols = "black") +
+    geom_smooth(se = FALSE) +
+    geom_vline(xintercept = 12e3, linetype = 2, colour = "red") +
+    geom_hline(yintercept = 3e3, linetype = 2, colour = "red")
+```
+
+We remove the cells with more than 12K reads or more than 3K genes.
+
+```{r subset}
+lung_data <- subset(lung_data, subset = nFeature_RNA <= 3e3 & nFeature_RNA <= 12e3)
+```
+
+And normalize the data, the default method uses logarithms with a _pseudo-count_ and a scaling factor, which could be good for a first pass. However, many more methods for normalization have been developed, thus it may is possible that there are methods more useful for different datasets.
+
+```{r normalize-data}
+## writing the default parameters, explicitly
+lung_data <- NormalizeData(lung_data, normalization.method = "LogNormalize", scale.factor = 10000)
+```
+
+## Identification of most variable genes
 
 
 
@@ -133,3 +162,7 @@ colors <- pals::alphabet2(nclusters)
 names(colors) <- NULL
 DimPlot(lung_data, reduction = "umap", cols = colors)
 ```
+
+## Final thoughts
+
+
