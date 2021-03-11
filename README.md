@@ -39,5 +39,4 @@ After installing RStudio, these are the packages we may use:
     install.packages("tidyverse")
     install.packages("Seurat")
     install.packages("BiocManager")
-    install.packages("plotly")
     BiocManager::install("scRNAseq") ## to get a dataset

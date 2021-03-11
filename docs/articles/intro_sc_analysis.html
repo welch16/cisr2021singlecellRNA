@@ -96,7 +96,6 @@
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">SingleCellExperiment</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">scRNAseq</span>) 
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="http://tidyverse.tidyverse.org">tidyverse</a></span>) 
-<span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://plotly-r.com">plotly</a></span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://wilkelab.org/cowplot">cowplot</a></span>)
 </pre></div>
 </div>
@@ -187,10 +186,11 @@
 <div id="identification-of-most-variable-genes" class="section level2">
 <h2 class="hasAnchor">
 <a href="#identification-of-most-variable-genes" class="anchor"></a>Identification of most variable genes</h2>
+<p>The figure shows some association between the average and variances gene expression. The point at the end is that focusing in the most variable genes helps to highlight the signal of single cell datasets. We are going to identify the top 2K most variable genes, but lets keep in mind that this may remove some genes of interest.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit">
 
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindVariableFeatures.html">FindVariableFeatures</a></span>(<span class="kw">lung_data</span>, selection.method = <span class="st">"vst"</span>,
-                                  nfeatures = <span class="fl">5000</span>)
+                                  nfeatures = <span class="fl">2000</span>)
 <span class="kw">plot1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/VariableFeaturePlot.html">VariableFeaturePlot</a></span>(<span class="kw">lung_data</span>, log = <span class="fl">TRUE</span>)
 <span class="kw">top_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/VariableFeatures.html">VariableFeatures</a></span>(<span class="kw">lung_data</span>), <span class="fl">20</span>)
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/LabelPoints.html">LabelPoints</a></span>(<span class="kw">plot1</span>, points = <span class="kw">top_genes</span>, repel = <span class="fl">TRUE</span>)
@@ -200,46 +200,97 @@
 <div id="principal-components-analysis" class="section level2">
 <h2 class="hasAnchor">
 <a href="#principal-components-analysis" class="anchor"></a>Principal Components Analysis</h2>
+<p>The next steps are to scale the data and to compute the principal components of the data. This is necessary because <code>Seurat</code> will utilize the components to calculate how do cells relate to each other. These steps are slow when we use all the genes in the data, so it is common to use the list of most variable genes.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit">
-
 <span class="kw">variable_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/VariableFeatures.html">VariableFeatures</a></span>(object = <span class="kw">lung_data</span>)
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/ScaleData.html">ScaleData</a></span>(<span class="kw">lung_data</span>, features = <span class="kw">variable_genes</span>)
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/RunPCA.html">RunPCA</a></span>(<span class="kw">lung_data</span>, features = <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/VariableFeatures.html">VariableFeatures</a></span>(object = <span class="kw">lung_data</span>))
 </pre></div>
+<p>For example, we can visualize top genes that are driving the variance explained by each component:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit">
-
+<span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/VizDimLoadings.html">VizDimLoadings</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, reduction = <span class="st">"pca"</span>, ncol = <span class="fl">3</span>)
+</pre></div>
+<p><img src="intro_sc_analysis_files/figure-html/viz-loadings-1.png" width="90%" style="display: block; margin: auto;"> Then, the next question to solve is how many components to pick. There are many alternatives to solve this question, but the simplest alternative is to pick them by the Elbow criteria, which is to compare the std. deviation explained by each components with its rank, and pick the previous components before we observe and elbow pattern.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/ElbowPlot.html">ElbowPlot</a></span>(<span class="kw">lung_data</span>)
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/pick-pc-components-1.png" width="700" style="display: block; margin: auto;"></p>
+<p>This is not an exact approach, so we according to the figure above, we would pick the top 2, 7 or 12 components.</p>
 </div>
-<div id="clustering" class="section level2">
+<div id="clustering-the-cells" class="section level2">
 <h2 class="hasAnchor">
-<a href="#clustering" class="anchor"></a>Clustering</h2>
-<div class="sourceCode" id="cb12"><pre class="downlit">
-<span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindNeighbors.html">FindNeighbors</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>)
-<span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindClusters.html">FindClusters</a></span>(<span class="kw">lung_data</span>, resolution = <span class="fl">0.1</span>)
+<a href="#clustering-the-cells" class="anchor"></a>Clustering the cells</h2>
+<p>This is the most important part of the analysis so far, <code>Seurat</code> applies a graph based clustering approach, and to determine the number of clusters it is going to be necessary to tune the two parameters: <strong>the top # of principal components</strong> and the <strong>resolution</strong>.</p>
+<ul>
+<li>The <strong>top # principal components</strong> determines how detailed is going to be our approximation when computing the distance between any two cells</li>
+<li>The <strong>resolution</strong> determines the size of the clusters that the algorithm finds. Smaller values will result in larger clusters or less clusters.</li>
+</ul>
+<p><code>Seurat</code> utilizes the Louvain algorithm to cluster the cells in a neighbor graph, and it works by maximizing the “modularity” of the cells network, so it tries to group together the nodes that very similar among them, and to maximize the distance between different clusters / modules.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit">
+<span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindNeighbors.html">FindNeighbors</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">7</span>)
+<span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindClusters.html">FindClusters</a></span>(<span class="kw">lung_data</span>, resolution = <span class="fl">.3</span>)
 <span class="co">#&gt; Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Number of nodes: 17514</span>
-<span class="co">#&gt; Number of edges: 584247</span>
+<span class="co">#&gt; Number of edges: 546894</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; Running Louvain algorithm...</span>
-<span class="co">#&gt; Maximum modularity in 10 random starts: 0.9720</span>
-<span class="co">#&gt; Number of communities: 8</span>
+<span class="co">#&gt; Maximum modularity in 10 random starts: 0.9308</span>
+<span class="co">#&gt; Number of communities: 9</span>
 <span class="co">#&gt; Elapsed time: 2 seconds</span>
+<span class="co">## this is to make the cluster colors agree below</span>
+<span class="kw">nclusters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nlevels.html">nlevels</a></span>(<span class="kw">lung_data</span><span class="op">@</span>meta.data<span class="op">$</span><span class="kw">seurat_clusters</span>)
+<span class="kw">colors</span> <span class="op">&lt;-</span> <span class="kw">pals</span>::<span class="fu"><a href="https://rdrr.io/pkg/pals/man/discrete.html">alphabet2</a></span>(<span class="kw">nclusters</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="kw">colors</span>) <span class="op">&lt;-</span> <span class="kw">NULL</span>
 </pre></div>
 </div>
 <div id="umap" class="section level2">
 <h2 class="hasAnchor">
 <a href="#umap" class="anchor"></a>UMAP</h2>
-<div class="sourceCode" id="cb13"><pre class="downlit">
+<p>If this was a bulk RNA-seq dataset, we would visualize the samples using principal components. However, doing this with single cell we get a visualization that is not getting advantage of the whole space, mostly because:</p>
+<ol style="list-style-type: decimal">
+<li>It is a linear transformation of the data</li>
+<li>There are other components representing the data variation, so sometimes dots from a cluster overlay with dots from other cluster</li>
+</ol>
+<div class="sourceCode" id="cb14"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"pca"</span>, cols = <span class="kw">colors</span>)
+</pre></div>
+<p><img src="intro_sc_analysis_files/figure-html/pc-analysis-1.png" width="700" style="display: block; margin: auto;"></p>
+<p>Therefore we need to depends on other dimensionality reduction methods like t-SNE, UMAP, etc. For example, we use UMAP and we can notice:</p>
+<ol style="list-style-type: decimal">
+<li>We can see that all clusters are represented, i.e. all are in front</li>
+<li>The cells in each cluster are grouped together, e.g. for clusters 7 and 8 the difference is the most striking</li>
+<li>The clusters that were close to each other are still close, e.g. <code>1 ~ 5 ~ 3</code>, <code>0 ~ 2</code>, etc</li>
+<li>The clustering algorithm is not perfect, it looks like there are clusters that can be further separated, thus we need to increase the resolution</li>
+</ol>
+<div class="sourceCode" id="cb15"><pre class="downlit">
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/RunUMAP.html">RunUMAP</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>)
-<span class="kw">nclusters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nlevels.html">nlevels</a></span>(<span class="kw">lung_data</span><span class="op">@</span>meta.data<span class="op">$</span><span class="kw">seurat_clusters</span>)
-<span class="kw">colors</span> <span class="op">&lt;-</span> <span class="kw">pals</span>::<span class="fu"><a href="https://rdrr.io/pkg/pals/man/discrete.html">alphabet2</a></span>(<span class="kw">nclusters</span>)
-<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="kw">colors</span>) <span class="op">&lt;-</span> <span class="kw">NULL</span>
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"umap"</span>, cols = <span class="kw">colors</span>)
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/umap-analysis-1.png" width="700" style="display: block; margin: auto;"></p>
+<p><strong>Disclaimer:</strong> UMAP is similar to t-SNE, and we would use the <code>runTSNE</code> instead of <code>runUMAP</code>:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit">
+<span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/RunTSNE.html">RunTSNE</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"tsne"</span>, cols = <span class="kw">colors</span>)
+</pre></div>
+</div>
+<div id="find-markers-per-cluster" class="section level2">
+<h2 class="hasAnchor">
+<a href="#find-markers-per-cluster" class="anchor"></a>Find markers per cluster</h2>
+<div class="sourceCode" id="cb17"><pre class="downlit">
+<span class="kw">lung_data_markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindAllMarkers.html">FindAllMarkers</a></span>(
+    <span class="kw">lung_data</span>, only.pos = <span class="fl">TRUE</span>,
+    min.pct = <span class="fl">0.25</span>, logfc.threshold = <span class="fl">0.25</span>)
+<span class="kw">top_markers</span> <span class="op">&lt;-</span> <span class="kw">lung_data_markers</span> <span class="op">%&gt;%</span> 
+    <span class="fu">group_by</span>(<span class="kw">cluster</span>) <span class="op">%&gt;%</span> 
+    <span class="fu">top_n</span>(n = <span class="fl">15</span>, wt = <span class="kw">avg_log2FC</span>)
+</pre></div>
+<div class="sourceCode" id="cb18"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DoHeatmap.html">DoHeatmap</a></span>(<span class="kw">lung_data</span>, features = <span class="kw">top_markers</span><span class="op">$</span><span class="kw">gene</span>,
+          group.colors = <span class="kw">colors</span>, size = <span class="fl">3</span>) <span class="op">+</span>
+  <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/SeuratTheme.html">NoLegend</a></span>()
+</pre></div>
+<p><img src="intro_sc_analysis_files/figure-html/representative-genes-1.png" width="90%" style="display: block; margin: auto;"></p>
 </div>
 <div id="final-thoughts" class="section level2">
 <h2 class="hasAnchor">
