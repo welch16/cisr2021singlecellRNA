@@ -92,23 +92,23 @@ VlnPlot(lung_data, features = c("nFeature_RNA", "nCount_RNA"), ncol = 2)
 Then, we compare those quantities, as expected both metrics are very correlated:
 
 ```{r metrics-corr, fig.width=6,fig.height=4, out.width="80%"}
-FeatureScatter(lung_data, feature1 = "nCount_RNA", feature2 = "nFeature_RNA", cols = "black") +
+FeatureScatter(lung_data, feature1 = "nCount_RNA", feature2 = "nFeature_RNA",
+               cols = "black") +
     geom_smooth(se = FALSE) +
     geom_vline(xintercept = 12e3, linetype = 2, colour = "red") +
     geom_hline(yintercept = 3e3, linetype = 2, colour = "red")
 ```
 
-We remove the cells with more than 12K reads or more than 3K genes.
+We remove the cells with more than 12K reads or more than 3K genes and normalize the data, the default method uses logarithms with a _pseudo-count_ and a scaling factor, which could be good for a first pass. However, many more methods for normalization have been developed, thus it may is possible that there are methods more useful for different datasets.
 
-```{r subset}
-lung_data <- subset(lung_data, subset = nFeature_RNA <= 3e3 & nFeature_RNA <= 12e3)
-```
 
-And normalize the data, the default method uses logarithms with a _pseudo-count_ and a scaling factor, which could be good for a first pass. However, many more methods for normalization have been developed, thus it may is possible that there are methods more useful for different datasets.
-
-```{r normalize-data}
+```{r subset-normalize}
+lung_data <- subset(lung_data,
+                    subset = nFeature_RNA <= 3e3 & nFeature_RNA <= 12e3)
 ## writing the default parameters, explicitly
-lung_data <- NormalizeData(lung_data, normalization.method = "LogNormalize", scale.factor = 10000)
+lung_data <- NormalizeData(lung_data,
+                           normalization.method = "LogNormalize",
+                           scale.factor = 10000)
 ```
 
 ## Identification of most variable genes
@@ -117,7 +117,8 @@ lung_data <- NormalizeData(lung_data, normalization.method = "LogNormalize", sca
 
 ```{r variable-features, include=TRUE,echo=TRUE,eval=TRUE,message=FALSE,warning=FALSE, fig.width = 7,fig.height=5,out.width="80%"}
 
-lung_data <- FindVariableFeatures(lung_data, selection.method = "vst", nfeatures = 2000)
+lung_data <- FindVariableFeatures(lung_data, selection.method = "vst",
+                                  nfeatures = 5000)
 plot1 <- VariableFeaturePlot(lung_data, log = TRUE)
 top_genes <- head(VariableFeatures(lung_data), 20)
 LabelPoints(plot1, points = top_genes, repel = TRUE)
@@ -147,10 +148,8 @@ ElbowPlot(lung_data)
 ## Clustering
 
 ```{r clustering}
-
 lung_data <- FindNeighbors(lung_data, dims = 1:10)
 lung_data <- FindClusters(lung_data, resolution = 0.1)
-
 ```
 
 ## UMAP
