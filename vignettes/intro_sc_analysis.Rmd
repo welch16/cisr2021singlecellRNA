@@ -172,6 +172,22 @@ names(colors) <- NULL
 
 ## UMAP
 
+To get a UMAP representation of the data we utilize:
+
+```{r umap-setup}
+lung_data <- RunUMAP(lung_data, dims = 1:10)
+```
+
+Then we can visualize how the cells are distributed under different discrete `meta.data` variables. The important thing to notice in these figures is that the cells are mixed regardless of batch / tissue.
+
+```{r umap-extra, fig.width=10, fig.height=4,out.width="100%"}
+plot_grid(
+  DimPlot(lung_data, reduction = "umap", group.by = "Library.prep.batch"),
+  DimPlot(lung_data, reduction = "umap", group.by = "Tissue"), nrow = 1
+)
+
+```
+
 If this was a bulk RNA-seq dataset, we would visualize the samples using principal components. However, doing this with single cell we get a visualization that is not getting advantage of the whole space, mostly because:
 
 1. It is a linear transformation of the data
@@ -189,34 +205,16 @@ Therefore we need to depends on other dimensionality reduction methods like t-SN
 4. The clustering algorithm is not perfect, it looks like there are clusters that can be further separated, thus we need to increase the resolution
 
 ```{r umap-analysis}
-lung_data <- RunUMAP(lung_data, dims = 1:10)
 DimPlot(lung_data, reduction = "umap", cols = colors)
 ```
 
-We can also, visualize how the cells are distributed under different discrete meta.data variables:
+Finally, the table below illustrates that the clusters computed by `Seurat` approximately coincides with the major cell types found in the manuscript:
 
-```{r umap-extra, fig.width=10, fig.height=4,out.width="100%"}
-plot_grid(
-  DimPlot(lung_data, reduction = "umap", group.by = "Library.prep.batch"),
-  DimPlot(lung_data, reduction = "umap", group.by = "Tissue"), nrow = 1
-)
-
-```
-
-```{r fake-comparison-truth, include=TRUE,echo=TRUE,eval=TRUE}
+```{r fake-comparison-truth}
 lung_data@meta.data %>%
   select(Major.cell.type, seurat_clusters) %>% 
   table()
 ```
-
-```{r comparison-truth, include=FALSE, echo = FALSE, eval = TRUE}
-lung_data@meta.data %>%
-  select(Major.cell.type, seurat_clusters) %>% 
-  table() %>% 
-  knitr::kable() %>% 
-  kableExtra::kable_styling("striped")
-```
-
 
 **Disclaimer:** UMAP is similar to t-SNE, and we would use the `runTSNE` instead of `runUMAP`:
 

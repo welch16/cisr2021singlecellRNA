@@ -58,6 +58,6 @@ BiocManager::install("scRNAseq") ## to get a dataset
 
 ## extra libraries for formatting
 install.packages("cowplot")
-install.packages("kableExtra")
+install.packages("pals")
 ```
 

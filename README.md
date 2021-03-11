@@ -43,4 +43,4 @@ After installing RStudio, these are the packages we may use:
 
     ## extra libraries for formatting
     install.packages("cowplot")
-    install.packages("kableExtra")
+    install.packages("pals")

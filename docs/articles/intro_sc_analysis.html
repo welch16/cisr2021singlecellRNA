@@ -58,8 +58,7 @@
 
       
 
-      </header><script src="intro_sc_analysis_files/header-attrs-2.7/header-attrs.js"></script><script src="intro_sc_analysis_files/kePrint-0.0.1/kePrint.js"></script><link href="intro_sc_analysis_files/lightable-0.0.1/lightable.css" rel="stylesheet">
-<div class="row">
+      </header><script src="intro_sc_analysis_files/header-attrs-2.7/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Introduction to single cell RNA-seq analysis</h1>
@@ -242,7 +241,7 @@
 <span class="co">#&gt; Running Louvain algorithm...</span>
 <span class="co">#&gt; Maximum modularity in 10 random starts: 0.9347</span>
 <span class="co">#&gt; Number of communities: 8</span>
-<span class="co">#&gt; Elapsed time: 2 seconds</span>
+<span class="co">#&gt; Elapsed time: 3 seconds</span>
 <span class="co">## this is to make the cluster colors agree below</span>
 <span class="kw">nclusters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nlevels.html">nlevels</a></span>(<span class="kw">lung_data</span><span class="op">@</span>meta.data<span class="op">$</span><span class="kw">seurat_clusters</span>)
 <span class="kw">colors</span> <span class="op">&lt;-</span> <span class="kw">pals</span>::<span class="fu"><a href="https://rdrr.io/pkg/pals/man/discrete.html">alphabet2</a></span>(<span class="kw">nclusters</span>)
@@ -252,12 +251,24 @@
 <div id="umap" class="section level2">
 <h2 class="hasAnchor">
 <a href="#umap" class="anchor"></a>UMAP</h2>
+<p>To get a UMAP representation of the data we utilize:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit">
+<span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/RunUMAP.html">RunUMAP</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>)
+</pre></div>
+<p>Then we can visualize how the cells are distributed under different discrete <code>meta.data</code> variables. The important thing to notice in these figures is that the cells are mixed regardless of batch / tissue.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/pkg/cowplot/man/plot_grid.html">plot_grid</a></span>(
+  <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"umap"</span>, group.by = <span class="st">"Library.prep.batch"</span>),
+  <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"umap"</span>, group.by = <span class="st">"Tissue"</span>), nrow = <span class="fl">1</span>
+)
+</pre></div>
+<p><img src="intro_sc_analysis_files/figure-html/umap-extra-1.png" width="100%" style="display: block; margin: auto;"></p>
 <p>If this was a bulk RNA-seq dataset, we would visualize the samples using principal components. However, doing this with single cell we get a visualization that is not getting advantage of the whole space, mostly because:</p>
 <ol style="list-style-type: decimal">
 <li>It is a linear transformation of the data</li>
 <li>There are other components representing the data variation, so sometimes dots from a cluster overlay with dots from other cluster</li>
 </ol>
-<div class="sourceCode" id="cb14"><pre class="downlit">
+<div class="sourceCode" id="cb16"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"pca"</span>, cols = <span class="kw">colors</span>)
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/pc-analysis-1.png" width="700" style="display: block; margin: auto;"></p>
@@ -268,20 +279,12 @@
 <li>The clusters that were close to each other are still close, e.g. <code>1 ~ 3 ~ 7</code>, <code>0 ~ 2</code>, etc</li>
 <li>The clustering algorithm is not perfect, it looks like there are clusters that can be further separated, thus we need to increase the resolution</li>
 </ol>
-<div class="sourceCode" id="cb15"><pre class="downlit">
-<span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/RunUMAP.html">RunUMAP</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>)
+<div class="sourceCode" id="cb17"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"umap"</span>, cols = <span class="kw">colors</span>)
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/umap-analysis-1.png" width="700" style="display: block; margin: auto;"></p>
-<p>We can also, visualize how the cells are distributed under different discrete meta.data variables:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/pkg/cowplot/man/plot_grid.html">plot_grid</a></span>(
-  <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"umap"</span>, group.by = <span class="st">"Library.prep.batch"</span>),
-  <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"umap"</span>, group.by = <span class="st">"Tissue"</span>), nrow = <span class="fl">1</span>
-)
-</pre></div>
-<p><img src="intro_sc_analysis_files/figure-html/umap-extra-1.png" width="100%" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb17"><pre class="downlit">
+<p>Finally, the table below illustrates that the clusters computed by <code>Seurat</code> approximately coincides with the major cell types found in the manuscript:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit">
 <span class="kw">lung_data</span><span class="op">@</span>meta.data <span class="op">%&gt;%</span>
   <span class="fu">select</span>(<span class="kw">Major.cell.type</span>, <span class="kw">seurat_clusters</span>) <span class="op">%&gt;%</span> 
   <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span>()
@@ -296,7 +299,7 @@
 <span class="co">#&gt;     T cells        2   35    2 1924    0    4    0   12</span>
 </pre></div>
 <p><strong>Disclaimer:</strong> UMAP is similar to t-SNE, and we would use the <code>runTSNE</code> instead of <code>runUMAP</code>:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit">
+<div class="sourceCode" id="cb19"><pre class="downlit">
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/RunTSNE.html">RunTSNE</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>)
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"tsne"</span>, cols = <span class="kw">colors</span>)
 </pre></div>
@@ -305,7 +308,7 @@
 <h2 class="hasAnchor">
 <a href="#find-markers-per-cluster" class="anchor"></a>Find markers per cluster</h2>
 <p>Finally to interpret the cluster, we can glance into few of the top genes that are representative into each cluster. This is done by using the <code>FindAllMarkers</code> function, which searches the differentially expressed genes when comparing the cells in every cluster against the others. Below we find all the markers and pick the top 10 genes in average log2 fold change, i.e. the genes with the highest relative expression in one cluster against the rest.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit">
+<div class="sourceCode" id="cb20"><pre class="downlit">
 <span class="kw">lung_data_markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindAllMarkers.html">FindAllMarkers</a></span>(
     <span class="kw">lung_data</span>, only.pos = <span class="fl">TRUE</span>,
     min.pct = <span class="fl">0.25</span>, logfc.threshold = <span class="fl">0.25</span>)
@@ -314,7 +317,7 @@
     <span class="fu">top_n</span>(n = <span class="fl">10</span>, wt = <span class="kw">avg_log2FC</span>)
 </pre></div>
 <p>We can visualize these markers into a heatmap, where the rows are a genes and each column is one of the many cells. The yellow / brown color mean that a gene is expressed in a given cell.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit">
+<div class="sourceCode" id="cb21"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DoHeatmap.html">DoHeatmap</a></span>(<span class="kw">lung_data</span>, features = <span class="kw">top_markers</span><span class="op">$</span><span class="kw">gene</span>,
           group.colors = <span class="kw">colors</span>, size = <span class="fl">3</span>) <span class="op">+</span>
   <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/SeuratTheme.html">NoLegend</a></span>()
