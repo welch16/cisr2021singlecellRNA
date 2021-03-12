@@ -14,11 +14,11 @@ Cancer Omics* session in the [UWCCC research retreat
 
 ## Instructor names and contact information:
 
--   Irene Ong <irene.ong@wisc.edu>
--   Sean Mcilwain <sean.mcilwain@wisc.edu>
--   Peng Liu <pliu55@wisc.edu>
--   Philippos Tsourkas <tsourkas@biostat.wisc.edu>
--   Rene Welch <rwelch2@wisc.edu>
+-   Irene Ong
+-   Sean Mcilwain
+-   Peng Liu
+-   Philippos Tsourkas
+-   Rene Welch
 
 ## Pre-requisites
 
