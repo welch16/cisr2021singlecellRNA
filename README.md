@@ -29,7 +29,7 @@ Cancer Omics* session in the [UWCCC research retreat
 We require to use:
 
 -   [R statistical software](https://www.r-project.org/),
--   [Rstudio](https://rstudio.com/products/rstudio/download/#download)
+-   [RStudio](https://rstudio.com/products/rstudio/download/#download)
     (not strictly necessary but the easiest alternative to work with R)
 
 ## R packages

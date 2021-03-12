@@ -144,7 +144,7 @@
 <span class="co">#&gt; bc0006         MoMacDC        Mono3</span>
 </pre></div>
 <p>This is a curated dataset, thus it already contains the cell labels. At the moment we are going to assume that we don’t know that yet.</p>
-<p><strong>Quick note:</strong> This data could be a bit large for some laptops, so in case of trouble running this naalysis, then it could be useful to pick another dataset. To list the datasets provided by the <code>scRNAseq</code> package use:</p>
+<p><strong>Quick note:</strong> This data could be a bit large for some laptops, so in case of trouble running this analysis, then it could be useful to pick another dataset. To list the datasets provided by the <code>scRNAseq</code> package use:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/scRNAseq/man/listDatasets.html">listDatasets</a></span>()
 </pre></div>
@@ -165,7 +165,7 @@
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/VlnPlot.html">VlnPlot</a></span>(<span class="kw">lung_data</span>, features = <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"nFeature_RNA"</span>, <span class="st">"nCount_RNA"</span>, <span class="st">"mt_perc"</span>), ncol = <span class="fl">3</span>)
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/brief-qc-1.png" width="90%" style="display: block; margin: auto;"></p>
-<p><strong>Disclaimer</strong> It is alway good to check the gene naming conventions. In the <code>Seurat</code> tutorial, the mitochondrial genes are searched by looking for the <code>MT</code> pattern at the start of every gene symbol. In this dataset, the pattern that we searched was <code>mt</code> so defining the percentage of mitochondrial genes in a cell with the <code>MT</code> would result in 0% for every cell!</p>
+<p><strong>Disclaimer</strong> It is always good to check the gene naming conventions. In the <code>Seurat</code> tutorial, the mitochondrial genes are searched by looking for the <code>MT</code> pattern at the start of every gene symbol. In this dataset, the pattern that we searched was <code>mt</code> so defining the percentage of mitochondrial genes in a cell with the <code>MT</code> would result in 0% for every cell!</p>
 <p>Then, we compare the first two quantities, as expected both metrics are very correlated:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FeatureScatter.html">FeatureScatter</a></span>(<span class="kw">lung_data</span>, feature1 = <span class="st">"nCount_RNA"</span>, feature2 = <span class="st">"nFeature_RNA"</span>,

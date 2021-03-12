@@ -67,7 +67,7 @@ head(lung_data@meta.data)
 
 This is a curated dataset, thus it already contains the cell labels. At the moment we are going to assume that we don't know that yet.
 
-**Quick note:** This data could be a bit large for some laptops, so in case of trouble running this naalysis, then it could be useful to pick another dataset. To list the datasets provided by the `scRNAseq` package use:
+**Quick note:** This data could be a bit large for some laptops, so in case of trouble running this analysis, then it could be useful to pick another dataset. To list the datasets provided by the `scRNAseq` package use:
 
 ```{r eval = FALSE}
 listDatasets()
@@ -89,7 +89,7 @@ lung_data[["mt_perc"]] <- Seurat::PercentageFeatureSet(lung_data, "^mt-")
 VlnPlot(lung_data, features = c("nFeature_RNA", "nCount_RNA", "mt_perc"), ncol = 3)
 ```
 
-**Disclaimer** It is alway good to check the gene naming conventions. In the `Seurat` tutorial, the mitochondrial genes are searched by looking for the `MT` pattern at the start of every gene symbol. In this dataset, the pattern that we searched was `mt` so defining the percentage of mitochondrial genes in a cell with the `MT` would result in 0% for every cell!
+**Disclaimer** It is always good to check the gene naming conventions. In the `Seurat` tutorial, the mitochondrial genes are searched by looking for the `MT` pattern at the start of every gene symbol. In this dataset, the pattern that we searched was `mt` so defining the percentage of mitochondrial genes in a cell with the `MT` would result in 0% for every cell!
 
 Then, we compare the first two quantities, as expected both metrics are very correlated:
 
