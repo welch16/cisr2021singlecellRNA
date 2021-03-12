@@ -191,7 +191,6 @@
 <a href="#identification-of-most-variable-genes" class="anchor"></a>Identification of most variable genes</h2>
 <p>The figure shows some association between the average and variances gene expression. The point at the end is that focusing in the most variable genes helps to highlight the signal of single cell datasets. We are going to identify the top 2K most variable genes, but lets keep in mind that this may remove some genes of interest.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit">
-
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindVariableFeatures.html">FindVariableFeatures</a></span>(<span class="kw">lung_data</span>, selection.method = <span class="st">"vst"</span>,
                                   nfeatures = <span class="fl">2000</span>)
 <span class="kw">plot1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/VariableFeaturePlot.html">VariableFeaturePlot</a></span>(<span class="kw">lung_data</span>, log = <span class="fl">TRUE</span>)
@@ -241,7 +240,7 @@
 <span class="co">#&gt; Running Louvain algorithm...</span>
 <span class="co">#&gt; Maximum modularity in 10 random starts: 0.9347</span>
 <span class="co">#&gt; Number of communities: 8</span>
-<span class="co">#&gt; Elapsed time: 3 seconds</span>
+<span class="co">#&gt; Elapsed time: 2 seconds</span>
 <span class="co">## this is to make the cluster colors agree below</span>
 <span class="kw">nclusters</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/nlevels.html">nlevels</a></span>(<span class="kw">lung_data</span><span class="op">@</span>meta.data<span class="op">$</span><span class="kw">seurat_clusters</span>)
 <span class="kw">colors</span> <span class="op">&lt;-</span> <span class="kw">pals</span>::<span class="fu"><a href="https://rdrr.io/pkg/pals/man/discrete.html">alphabet2</a></span>(<span class="kw">nclusters</span>)

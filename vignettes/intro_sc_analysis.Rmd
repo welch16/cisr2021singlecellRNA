@@ -119,13 +119,11 @@ lung_data <- NormalizeData(lung_data,
 The figure shows some association between the average and variances gene expression. The point at the end is that focusing in the most variable genes helps to highlight the signal of single cell datasets. We are going to identify the top 2K most variable genes, but lets keep in mind that this may remove some genes of interest.
 
 ```{r variable-features, include=TRUE,echo=TRUE,eval=TRUE,message=FALSE,warning=FALSE, fig.width = 7,fig.height=5,out.width="80%"}
-
 lung_data <- FindVariableFeatures(lung_data, selection.method = "vst",
                                   nfeatures = 2000)
 plot1 <- VariableFeaturePlot(lung_data, log = TRUE)
 top_genes <- head(VariableFeatures(lung_data), 20)
 LabelPoints(plot1, points = top_genes, repel = TRUE)
-
 ```
 
 ## Principal Components Analysis
