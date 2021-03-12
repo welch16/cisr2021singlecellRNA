@@ -173,7 +173,7 @@ names(colors) <- NULL
 To get a UMAP representation of the data we utilize:
 
 ```{r umap-setup}
-lung_data <- RunUMAP(lung_data, dims = 1:10)
+lung_data <- RunUMAP(lung_data, dims = 1:7)
 ```
 
 Then we can visualize how the cells are distributed under different discrete `meta.data` variables. The important thing to notice in these figures is that the cells are mixed regardless of batch / tissue.

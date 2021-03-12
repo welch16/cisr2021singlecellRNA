@@ -252,7 +252,7 @@
 <a href="#umap" class="anchor"></a>UMAP</h2>
 <p>To get a UMAP representation of the data we utilize:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit">
-<span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/RunUMAP.html">RunUMAP</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>)
+<span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/RunUMAP.html">RunUMAP</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">7</span>)
 </pre></div>
 <p>Then we can visualize how the cells are distributed under different discrete <code>meta.data</code> variables. The important thing to notice in these figures is that the cells are mixed regardless of batch / tissue.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit">
