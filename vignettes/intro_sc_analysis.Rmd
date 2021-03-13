@@ -27,6 +27,20 @@ The idea behind this small session is to provide tools to start analyzing a sing
 * `scRNAseq`
 * `Seurat`
 
+## Install packages
+
+```{r, eval = FALSE, include=TRUE, echo = TRUE}
+install.packages("tidyverse")
+install.packages("Seurat")
+install.packages("BiocManager")
+BiocManager::install("scRNAseq") ## to get a dataset
+
+## extra libraries for formatting
+install.packages("cowplot")
+install.packages("pals")
+```
+
+
 ## Introduction
 
 There are many steps involved in analyzing a single cell RNA-seq experiment. Usually, we start by aligning the sequence reads into a reference genome to quantify the number of reads mapped to each gene. This results into a table of counts, which we are going to use to perform statistical analysis using R. For single cell RNA-seq data, there are many tools to perform this step, but today we are going to utilize from an already curated dataset, and show how to process it with the R package `Seurat`.

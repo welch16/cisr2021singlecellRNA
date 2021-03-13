@@ -86,12 +86,26 @@
 </ul>
 </div>
 </div>
+<div id="install-packages" class="section level2">
+<h2 class="hasAnchor">
+<a href="#install-packages" class="anchor"></a>Install packages</h2>
+<div class="sourceCode" id="cb1"><pre class="downlit">
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span>(<span class="st">"tidyverse"</span>)
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span>(<span class="st">"Seurat"</span>)
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span>(<span class="st">"BiocManager"</span>)
+<span class="kw">BiocManager</span>::<span class="fu"><a href="https://rdrr.io/pkg/BiocManager/man/install.html">install</a></span>(<span class="st">"scRNAseq"</span>) <span class="co">## to get a dataset</span>
+
+<span class="co">## extra libraries for formatting</span>
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span>(<span class="st">"cowplot"</span>)
+<span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html">install.packages</a></span>(<span class="st">"pals"</span>)
+</pre></div>
+</div>
 <div id="introduction" class="section level2">
 <h2 class="hasAnchor">
 <a href="#introduction" class="anchor"></a>Introduction</h2>
 <p>There are many steps involved in analyzing a single cell RNA-seq experiment. Usually, we start by aligning the sequence reads into a reference genome to quantify the number of reads mapped to each gene. This results into a table of counts, which we are going to use to perform statistical analysis using R. For single cell RNA-seq data, there are many tools to perform this step, but today we are going to utilize from an already curated dataset, and show how to process it with the R package <code>Seurat</code>.</p>
 <p>First, let’s load all the packages we will need to analyze the data:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit">
+<div class="sourceCode" id="cb2"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw"><a href="https://satijalab.org/seurat">Seurat</a></span>) <span class="co">## main package that we are going to use</span>
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">SingleCellExperiment</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/library.html">library</a></span>(<span class="kw">scRNAseq</span>) 
@@ -103,7 +117,7 @@
 <h2 class="hasAnchor">
 <a href="#getting-the-data" class="anchor"></a>Getting the data</h2>
 <p>First, we need to download a dataset. Fortunately, the <code>scRNAseq</code> package provides a variety of already curated datasets:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit">
+<div class="sourceCode" id="cb3"><pre class="downlit">
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/scRNAseq/man/ZilionisLungData.html">ZilionisLungData</a></span>(<span class="st">"mouse"</span>)
 <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="kw">lung_data</span>) <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/make.unique.html">make.unique</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="kw">lung_data</span>), sep = <span class="st">"_"</span>)
 <span class="fu">colData</span>(<span class="kw">lung_data</span>)[[<span class="st">"Barcode"</span>]] <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(<span class="kw">lung_data</span>)
@@ -111,7 +125,7 @@
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/as.Seurat.html">as.Seurat</a></span>(<span class="kw">lung_data</span>, project = <span class="st">"lung"</span>)
 </pre></div>
 <p>Now, Seurat provides all sorts of useful information on our dataset:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit">
+<div class="sourceCode" id="cb4"><pre class="downlit">
 <span class="kw">lung_data</span>
 <span class="co">#&gt; An object of class Seurat </span>
 <span class="co">#&gt; 28205 features across 17549 samples within 1 assay </span>
@@ -119,7 +133,7 @@
 <span class="co">#&gt;  1 dimensional reduction calculated: SPRING</span>
 </pre></div>
 <p>To access the metadata, i.e. information for each cell / droplet, we do:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit">
+<div class="sourceCode" id="cb5"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="kw">lung_data</span><span class="op">@</span>meta.data)
 <span class="co">#&gt;        Library Barcode Animal Run  Tissue Used Library.prep.batch Total.counts</span>
 <span class="co">#&gt; bc0001   h_1_1  bc0001    h_1   1 healthy TRUE    round1_20151128        11915</span>
@@ -145,7 +159,7 @@
 </pre></div>
 <p>This is a curated dataset, thus it already contains the cell labels. At the moment we are going to assume that we don’t know that yet.</p>
 <p><strong>Quick note:</strong> This data could be a bit large for some laptops, so in case of trouble running this analysis, then it could be useful to pick another dataset. To list the datasets provided by the <code>scRNAseq</code> package use:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit">
+<div class="sourceCode" id="cb6"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/scRNAseq/man/listDatasets.html">listDatasets</a></span>()
 </pre></div>
 </div>
@@ -158,7 +172,7 @@
 <li>Low-quality cells or empty droplets will often have few genes</li>
 </ul>
 <p>First, we add a pair of QC metric to the <code>meta.data</code>, and the explore their distribution:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit">
+<div class="sourceCode" id="cb7"><pre class="downlit">
 <span class="kw">lung_data</span>[[<span class="st">"nCount_RNA"</span>]] <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/colSums.html">colSums</a></span>(<span class="kw">lung_data</span>[[<span class="st">"RNA"</span>]]<span class="op">@</span>counts)
 <span class="kw">lung_data</span>[[<span class="st">"nFeature_RNA"</span>]] <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/apply.html">apply</a></span>(<span class="kw">lung_data</span>[[<span class="st">"RNA"</span>]]<span class="op">@</span>counts, <span class="fl">2</span>, <span class="fu">function</span>(<span class="kw">x</span>)<span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span>(<span class="kw">x</span> <span class="op">&gt;</span> <span class="fl">0</span>))
 <span class="kw">lung_data</span>[[<span class="st">"mt_perc"</span>]] <span class="op">&lt;-</span> <span class="kw">Seurat</span>::<span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/PercentageFeatureSet.html">PercentageFeatureSet</a></span>(<span class="kw">lung_data</span>, <span class="st">"^mt-"</span>)
@@ -167,7 +181,7 @@
 <p><img src="intro_sc_analysis_files/figure-html/brief-qc-1.png" width="90%" style="display: block; margin: auto;"></p>
 <p><strong>Disclaimer</strong> It is always good to check the gene naming conventions. In the <code>Seurat</code> tutorial, the mitochondrial genes are searched by looking for the <code>MT</code> pattern at the start of every gene symbol. In this dataset, the pattern that we searched was <code>mt</code> so defining the percentage of mitochondrial genes in a cell with the <code>MT</code> would result in 0% for every cell!</p>
 <p>Then, we compare the first two quantities, as expected both metrics are very correlated:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit">
+<div class="sourceCode" id="cb8"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FeatureScatter.html">FeatureScatter</a></span>(<span class="kw">lung_data</span>, feature1 = <span class="st">"nCount_RNA"</span>, feature2 = <span class="st">"nFeature_RNA"</span>,
                cols = <span class="st">"black"</span>) <span class="op">+</span>
     <span class="fu">geom_smooth</span>(se = <span class="fl">FALSE</span>) <span class="op">+</span>
@@ -176,7 +190,7 @@
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/metrics-corr-1.png" width="80%" style="display: block; margin: auto;"></p>
 <p>We remove the cells with more than 12K reads or more than 3K genes and normalize the data, the default method uses logarithms with a <em>pseudo-count</em> and a scaling factor, which could be good for a first pass. However, many more methods for normalization have been developed, thus it may is possible that there are methods more useful for different datasets.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit">
+<div class="sourceCode" id="cb9"><pre class="downlit">
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(<span class="kw">lung_data</span>,
                     subset = <span class="kw">nFeature_RNA</span> <span class="op">&lt;=</span> <span class="fl">3e3</span> <span class="op">&amp;</span> <span class="kw">nFeature_RNA</span> <span class="op">&lt;=</span> <span class="fl">12e3</span> <span class="op">&amp;</span>
                       <span class="kw">mt_perc</span> <span class="op">&lt;=</span> <span class="fl">20</span> <span class="op">&amp;</span> <span class="kw">Used</span>)
@@ -190,7 +204,7 @@
 <h2 class="hasAnchor">
 <a href="#identification-of-most-variable-genes" class="anchor"></a>Identification of most variable genes</h2>
 <p>The figure shows some association between the average and variances gene expression. The point at the end is that focusing in the most variable genes helps to highlight the signal of single cell datasets. We are going to identify the top 2K most variable genes, but lets keep in mind that this may remove some genes of interest.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit">
+<div class="sourceCode" id="cb10"><pre class="downlit">
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindVariableFeatures.html">FindVariableFeatures</a></span>(<span class="kw">lung_data</span>, selection.method = <span class="st">"vst"</span>,
                                   nfeatures = <span class="fl">2000</span>)
 <span class="kw">plot1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/VariableFeaturePlot.html">VariableFeaturePlot</a></span>(<span class="kw">lung_data</span>, log = <span class="fl">TRUE</span>)
@@ -203,18 +217,18 @@
 <h2 class="hasAnchor">
 <a href="#principal-components-analysis" class="anchor"></a>Principal Components Analysis</h2>
 <p>The next steps are to scale the data and to compute the principal components of the data. This is necessary because <code>Seurat</code> will utilize the components to calculate how do cells relate to each other. These steps are slow when we use all the genes in the data, so it is common to use the list of most variable genes.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit">
+<div class="sourceCode" id="cb11"><pre class="downlit">
 <span class="kw">variable_genes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/VariableFeatures.html">VariableFeatures</a></span>(object = <span class="kw">lung_data</span>)
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/ScaleData.html">ScaleData</a></span>(<span class="kw">lung_data</span>, features = <span class="kw">variable_genes</span>)
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/RunPCA.html">RunPCA</a></span>(<span class="kw">lung_data</span>, features = <span class="fu"><a href="https://rdrr.io/pkg/SeuratObject/man/VariableFeatures.html">VariableFeatures</a></span>(object = <span class="kw">lung_data</span>))
 </pre></div>
 <p>For example, we can visualize top genes that are driving the variance explained by each component:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit">
+<div class="sourceCode" id="cb12"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/VizDimLoadings.html">VizDimLoadings</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">3</span>, reduction = <span class="st">"pca"</span>, ncol = <span class="fl">3</span>)
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/viz-loadings-1.png" width="90%" style="display: block; margin: auto;"></p>
 <p>Then, the next question to solve is how many components to pick. There are many alternatives to solve this question, but the simplest alternative is to pick them by the Elbow criteria, which is to compare the std. deviation explained by each components with its rank, and pick the previous components before we observe and elbow pattern.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit">
+<div class="sourceCode" id="cb13"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/ElbowPlot.html">ElbowPlot</a></span>(<span class="kw">lung_data</span>)
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/pick-pc-components-1.png" width="700" style="display: block; margin: auto;"></p>
@@ -229,7 +243,7 @@
 <li>The <strong>resolution</strong> determines the size of the clusters that the algorithm finds. Smaller values will result in larger clusters or less clusters.</li>
 </ul>
 <p><code>Seurat</code> utilizes the Louvain algorithm to cluster the cells in a neighbor graph, and it works by maximizing the “modularity” of the cells network, so it tries to group together the nodes that very similar among them, and to maximize the distance between different clusters / modules.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit">
+<div class="sourceCode" id="cb14"><pre class="downlit">
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindNeighbors.html">FindNeighbors</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">7</span>)
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindClusters.html">FindClusters</a></span>(<span class="kw">lung_data</span>, resolution = <span class="fl">.3</span>)
 <span class="co">#&gt; Modularity Optimizer version 1.3.0 by Ludo Waltman and Nees Jan van Eck</span>
@@ -251,11 +265,11 @@
 <h2 class="hasAnchor">
 <a href="#umap" class="anchor"></a>UMAP</h2>
 <p>To get a UMAP representation of the data we utilize:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit">
+<div class="sourceCode" id="cb15"><pre class="downlit">
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/RunUMAP.html">RunUMAP</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">7</span>)
 </pre></div>
 <p>Then we can visualize how the cells are distributed under different discrete <code>meta.data</code> variables. The important thing to notice in these figures is that the cells are mixed regardless of batch / tissue.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit">
+<div class="sourceCode" id="cb16"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/cowplot/man/plot_grid.html">plot_grid</a></span>(
   <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"umap"</span>, group.by = <span class="st">"Library.prep.batch"</span>),
   <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"umap"</span>, group.by = <span class="st">"Tissue"</span>), nrow = <span class="fl">1</span>
@@ -267,7 +281,7 @@
 <li>It is a linear transformation of the data</li>
 <li>There are other components representing the data variation, so sometimes dots from a cluster overlay with dots from other cluster</li>
 </ol>
-<div class="sourceCode" id="cb16"><pre class="downlit">
+<div class="sourceCode" id="cb17"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"pca"</span>, cols = <span class="kw">colors</span>)
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/pc-analysis-1.png" width="700" style="display: block; margin: auto;"></p>
@@ -278,12 +292,12 @@
 <li>The clusters that were close to each other are still close, e.g. <code>1 ~ 3 ~ 7</code>, <code>0 ~ 2</code>, etc</li>
 <li>The clustering algorithm is not perfect, it looks like there are clusters that can be further separated, thus we need to increase the resolution</li>
 </ol>
-<div class="sourceCode" id="cb17"><pre class="downlit">
+<div class="sourceCode" id="cb18"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"umap"</span>, cols = <span class="kw">colors</span>)
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/umap-analysis-1.png" width="700" style="display: block; margin: auto;"></p>
 <p>Finally, the table below illustrates that the clusters computed by <code>Seurat</code> approximately coincides with the major cell types found in the manuscript:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit">
+<div class="sourceCode" id="cb19"><pre class="downlit">
 <span class="kw">lung_data</span><span class="op">@</span>meta.data <span class="op">%&gt;%</span>
   <span class="fu">select</span>(<span class="kw">Major.cell.type</span>, <span class="kw">seurat_clusters</span>) <span class="op">%&gt;%</span> 
   <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span>()
@@ -298,7 +312,7 @@
 <span class="co">#&gt;     T cells        2   35    2 1924    0    4    0   12</span>
 </pre></div>
 <p><strong>Disclaimer:</strong> UMAP is similar to t-SNE, and we would use the <code>runTSNE</code> instead of <code>runUMAP</code>:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit">
+<div class="sourceCode" id="cb20"><pre class="downlit">
 <span class="kw">lung_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/RunTSNE.html">RunTSNE</a></span>(<span class="kw">lung_data</span>, dims = <span class="fl">1</span><span class="op">:</span><span class="fl">10</span>)
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"tsne"</span>, cols = <span class="kw">colors</span>)
 </pre></div>
@@ -307,7 +321,7 @@
 <h2 class="hasAnchor">
 <a href="#find-markers-per-cluster" class="anchor"></a>Find markers per cluster</h2>
 <p>Finally to interpret the cluster, we can glance into few of the top genes that are representative into each cluster. This is done by using the <code>FindAllMarkers</code> function, which searches the differentially expressed genes when comparing the cells in every cluster against the others. Below we find all the markers and pick the top 10 genes in average log2 fold change, i.e. the genes with the highest relative expression in one cluster against the rest.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit">
+<div class="sourceCode" id="cb21"><pre class="downlit">
 <span class="kw">lung_data_markers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/FindAllMarkers.html">FindAllMarkers</a></span>(
     <span class="kw">lung_data</span>, only.pos = <span class="fl">TRUE</span>,
     min.pct = <span class="fl">0.25</span>, logfc.threshold = <span class="fl">0.25</span>)
@@ -316,14 +330,14 @@
     <span class="fu">top_n</span>(n = <span class="fl">10</span>, wt = <span class="kw">avg_log2FC</span>)
 </pre></div>
 <p>We can visualize these markers into a heatmap, where the rows are a genes and each column is one of the many cells. The yellow / brown color mean that a gene is expressed in a given cell.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit">
+<div class="sourceCode" id="cb22"><pre class="downlit">
 <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DoHeatmap.html">DoHeatmap</a></span>(<span class="kw">lung_data</span>, features = <span class="kw">top_markers</span><span class="op">$</span><span class="kw">gene</span>,
           group.colors = <span class="kw">colors</span>, size = <span class="fl">3</span>) <span class="op">+</span>
   <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/SeuratTheme.html">NoLegend</a></span>()
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/representative-genes-1.png" width="90%" style="display: block; margin: auto;"></p>
 <p>Changing the cluster names, we get:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit">
+<div class="sourceCode" id="cb23"><pre class="downlit">
 <span class="kw">lung_data</span><span class="op">@</span>meta.data<span class="op">$</span><span class="kw">seurat_clusters</span> <span class="op">&lt;-</span>
   <span class="kw">forcats</span>::<span class="fu"><a href="https://forcats.tidyverse.org/reference/fct_recode.html">fct_recode</a></span>(<span class="kw">lung_data</span><span class="op">@</span>meta.data<span class="op">$</span><span class="kw">seurat_clusters</span>,
     `Neutrophils` = <span class="st">"0"</span>,
@@ -340,7 +354,7 @@
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/umap-analysis-truth-1.png" width="700" style="display: block; margin: auto;"></p>
 <p>Finally, we compare the composition of tumor vs healthy cells:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit">
+<div class="sourceCode" id="cb24"><pre class="downlit">
 <span class="kw">lung_data</span><span class="op">@</span>meta.data <span class="op">%&gt;%</span>
   <span class="fu">group_by</span>(<span class="kw">Tissue</span>) <span class="op">%&gt;%</span>
   <span class="kw">dplyr</span>::<span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span>(<span class="kw">seurat_clusters</span>) <span class="op">%&gt;%</span>
