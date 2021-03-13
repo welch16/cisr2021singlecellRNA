@@ -242,6 +242,39 @@ DoHeatmap(lung_data, features = top_markers$gene,
   NoLegend()
 ```
 
+Changing the cluster names, we get:
+
+```{r umap-analysis-truth}
+lung_data@meta.data$seurat_clusters <-
+  forcats::fct_recode(lung_data@meta.data$seurat_clusters,
+    `Neutrophils` = "0",
+    `B cells` = "1",
+    `Basophils` = "2",
+    `T cells` = "3",
+    `MoMacDC1` = "4",
+    `MoMacDC2` = "5",
+    `MoMacDC3` = "6",
+    `NK cells` = "7")
+names(colors) <- levels(lung_data@meta.data$seurat_clusters)
+DimPlot(lung_data, reduction = "umap", cols = colors, group.by = "seurat_clusters", label = TRUE) +
+  ggtitle(NULL)
+```
+
+Finally, we compare the composition of tumor vs healthy cells:
+
+```{r cell-composition, fig.width=8,fig.height=3, out.width="100%"}
+lung_data@meta.data %>%
+  group_by(Tissue) %>%
+  dplyr::count(seurat_clusters) %>%
+  mutate(p = n / sum(n)) %>%
+  ggplot(aes(y = Tissue, x = p, fill = seurat_clusters)) + geom_col() +
+  theme_light() +
+  theme(legend.position = "top", axis.title = element_blank(), axis.text = element_text(size = 14),
+        legend.text = element_text(size = 12)) +
+  scale_fill_manual(values = colors) +
+  scale_x_continuous(labels = scales::percent_format(1), breaks = scales::breaks_pretty(n = 4))
+```
+
 ## Final thoughts
 
 There is no an infallible recipe for analyzing any dataset, in particular single cell experiments had become more complex. In this document, we show only one strategy to start analyzing these sort of experiments.

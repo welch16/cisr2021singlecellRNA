@@ -322,6 +322,37 @@
   <span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/SeuratTheme.html">NoLegend</a></span>()
 </pre></div>
 <p><img src="intro_sc_analysis_files/figure-html/representative-genes-1.png" width="90%" style="display: block; margin: auto;"></p>
+<p>Changing the cluster names, we get:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit">
+<span class="kw">lung_data</span><span class="op">@</span>meta.data<span class="op">$</span><span class="kw">seurat_clusters</span> <span class="op">&lt;-</span>
+  <span class="kw">forcats</span>::<span class="fu"><a href="https://forcats.tidyverse.org/reference/fct_recode.html">fct_recode</a></span>(<span class="kw">lung_data</span><span class="op">@</span>meta.data<span class="op">$</span><span class="kw">seurat_clusters</span>,
+    `Neutrophils` = <span class="st">"0"</span>,
+    `B cells` = <span class="st">"1"</span>,
+    `Basophils` = <span class="st">"2"</span>,
+    `T cells` = <span class="st">"3"</span>,
+    `MoMacDC1` = <span class="st">"4"</span>,
+    `MoMacDC2` = <span class="st">"5"</span>,
+    `MoMacDC3` = <span class="st">"6"</span>,
+    `NK cells` = <span class="st">"7"</span>)
+<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span>(<span class="kw">colors</span>) <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/levels.html">levels</a></span>(<span class="kw">lung_data</span><span class="op">@</span>meta.data<span class="op">$</span><span class="kw">seurat_clusters</span>)
+<span class="fu"><a href="https://rdrr.io/pkg/Seurat/man/DimPlot.html">DimPlot</a></span>(<span class="kw">lung_data</span>, reduction = <span class="st">"umap"</span>, cols = <span class="kw">colors</span>, group.by = <span class="st">"seurat_clusters"</span>, label = <span class="fl">TRUE</span>) <span class="op">+</span>
+  <span class="fu">ggtitle</span>(<span class="kw">NULL</span>)
+</pre></div>
+<p><img src="intro_sc_analysis_files/figure-html/umap-analysis-truth-1.png" width="700" style="display: block; margin: auto;"></p>
+<p>Finally, we compare the composition of tumor vs healthy cells:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit">
+<span class="kw">lung_data</span><span class="op">@</span>meta.data <span class="op">%&gt;%</span>
+  <span class="fu">group_by</span>(<span class="kw">Tissue</span>) <span class="op">%&gt;%</span>
+  <span class="kw">dplyr</span>::<span class="fu"><a href="https://dplyr.tidyverse.org/reference/count.html">count</a></span>(<span class="kw">seurat_clusters</span>) <span class="op">%&gt;%</span>
+  <span class="fu">mutate</span>(p = <span class="kw">n</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span>(<span class="kw">n</span>)) <span class="op">%&gt;%</span>
+  <span class="fu">ggplot</span>(<span class="fu">aes</span>(y = <span class="kw">Tissue</span>, x = <span class="kw">p</span>, fill = <span class="kw">seurat_clusters</span>)) <span class="op">+</span> <span class="fu">geom_col</span>() <span class="op">+</span>
+  <span class="fu">theme_light</span>() <span class="op">+</span>
+  <span class="fu">theme</span>(legend.position = <span class="st">"top"</span>, axis.title = <span class="fu">element_blank</span>(), axis.text = <span class="fu">element_text</span>(size = <span class="fl">14</span>),
+        legend.text = <span class="fu">element_text</span>(size = <span class="fl">12</span>)) <span class="op">+</span>
+  <span class="fu">scale_fill_manual</span>(values = <span class="kw">colors</span>) <span class="op">+</span>
+  <span class="fu">scale_x_continuous</span>(labels = <span class="kw">scales</span>::<span class="fu"><a href="https://scales.r-lib.org//reference/label_percent.html">percent_format</a></span>(<span class="fl">1</span>), breaks = <span class="kw">scales</span>::<span class="fu"><a href="https://scales.r-lib.org//reference/breaks_pretty.html">breaks_pretty</a></span>(n = <span class="fl">4</span>))
+</pre></div>
+<p><img src="intro_sc_analysis_files/figure-html/cell-composition-1.png" width="100%" style="display: block; margin: auto;"></p>
 </div>
 <div id="final-thoughts" class="section level2">
 <h2 class="hasAnchor">
