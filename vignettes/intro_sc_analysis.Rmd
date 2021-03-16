@@ -120,7 +120,7 @@ We remove the cells with more than 12K reads or more than 3K genes and normalize
 
 ```{r subset-normalize}
 lung_data <- subset(lung_data,
-                    subset = nFeature_RNA <= 3e3 & nFeature_RNA <= 12e3 &
+                    subset = nFeature_RNA <= 3e3 & nCount_RNA <= 12e3 &
                       mt_perc <= 20 & Used)
 ## writing the default parameters, explicitly
 lung_data <- NormalizeData(lung_data,
